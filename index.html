@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>直女測驗</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f0f8;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #d83e8c;
+            margin-bottom: 30px;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .question {
+            margin-bottom: 30px;
+        }
+        .question h2 {
+            margin-bottom: 15px;
+            color: #d83e8c;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option {
+            padding: 10px 15px;
+            background-color: #f8f0f8;
+            border: 1px solid #e9c6d5;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .option:hover {
+            background-color: #f3d6e6;
+        }
+        .option.selected {
+            background-color: #e9c6d5;
+            border-color: #d83e8c;
+        }
+        .button {
+            background-color: #d83e8c;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #c62d7a;
+        }
+        .button:disabled {
+            background-color: #e9c6d5;
+            cursor: not-allowed;
+        }
+        .result {
+            display: none;
+            text-align: center;
+        }
+        .result h2 {
+            color: #d83e8c;
+            margin-bottom: 20px;
+        }
+        .final-result {
+            font-size: 24px;
+            font-weight: bold;
+            color: #d83e8c;
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px dashed #d83e8c;
+            border-radius: 10px;
+        }
+        .progress-container {
+            display: none;
+            margin: 30px 0;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #f3d6e6;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            background-color: #d83e8c;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        .progress-text {
+            text-align: center;
+            margin-top: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+        .restart-btn {
+            background-color: #6c757d;
+            margin-top: 30px;
+        }
+        .restart-btn:hover {
+            background-color: #5a6268;
+        }
+        .explanation {
+            margin: 20px 0;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>直女測驗</h1>
+        
+        <div id="intro">
+            <p>這個測驗將分析你的直女指數！請誠實回答以下問題...</p>
+            <button class="button" id="start-btn">開始測驗</button>
+        </div>
+        
+        <div id="quiz" class="hidden">
+            <div class="question">
+                <h2 id="question-text">問題 1：當有人邀請你出去，你會...</h2>
+                <div class="options" id="options-container">
+                    <!-- 選項將由JavaScript動態添加 -->
+                </div>
+            </div>
+            <button class="button" id="next-btn" disabled>下一題</button>
+        </div>
+        
+        <div id="progress-screen" class="hidden">
+            <h2>正在分析你的答案...</h2>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress" id="progress-bar"></div>
+                </div>
+                <div class="progress-text" id="progress-text">0%</div>
+            </div>
+        </div>
+        
+        <div id="result" class="hidden">
+            <h2>測驗結果</h2>
+            <p id="personality-trait">你是個直率的人...</p>
+            <p>根據你的回答，我們精準分析出...</p>
+            <div class="final-result">喜歡吳如如！</div>
+            <p id="explanation" class="explanation">不管你怎麼回答，系統都能精準測出你喜歡吳如如！</p>
+            <button class="button restart-btn" id="restart-btn">重新測驗</button>
+        </div>
+    </div>
+    
+    <script>
+        // 問題和選項
+        const questions = [
+            {
+                question: "當有人邀請你出去，你會...",
+                options: [
+                    "A. 立刻答應",
+                    "B. 考慮一下才答應",
+                    "C. 問清楚有誰參加",
+                    "D. 找藉口拒絕"
+                ]
+            },
+            {
+                question: "你最喜歡的休閒活動是...",
+                options: [
+                    "A. 看電影",
+                    "B. 逛街購物",
+                    "C. 宅在家裡",
+                    "D. 戶外運動"
+                ]
+            },
+            {
+                question: "當你喜歡一個人時，你會...",
+                options: [
+                    "A. 直接告訴對方",
+                    "B. 給一些暗示",
+                    "C. 等對方先表白",
+                    "D. 假裝不喜歡"
+                ]
+            },
+            {
+                question: "你收到曖昧對象的訊息會...",
+                options: [
+                    "A. 立即回覆",
+                    "B. 等一會再回",
+                    "C. 思考很久再回",
+                    "D. 看到了但不回"
+                ]
+            },
+            {
+                question: "你對感情的態度是...",
+                options: [
+                    "A. 勇往直前",
+                    "B. 順其自然",
+                    "C. 謹慎小心",
+                    "D. 能拖就拖"
+                ]
+            }
+        ];
+
+        // 人格特質描述
+        const personalityTraits = {
+            'A': "你是個直率的人",
+            'B': "你是個思考周到的人",
+            'C': "你是個謹慎的人",
+            'D': "你是個有神秘感的人"
+        };
+
+        // 幽默解釋
+        const explanations = [
+            "不管你怎麼回答，系統都能精準測出你喜歡吳如如！",
+            "恭喜！你已成功被吳如如圈粉！",
+            "測驗顯示你100%是吳如如的鐵粉，沒有商量的餘地！",
+            "所有跡象都指向一個事實：你對吳如如情有獨鍾！",
+            "不用否認了，數據不會說謊，你就是喜歡吳如如！"
+        ];
+
+        // 元素
+        const introScreen = document.getElementById('intro');
+        const quizScreen = document.getElementById('quiz');
+        const progressScreen = document.getElementById('progress-screen');
+        const resultScreen = document.getElementById('result');
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const personalityTraitText = document.getElementById('personality-trait');
+        const explanationText = document.getElementById('explanation');
+
+        // 變數
+        let currentQuestionIndex = 0;
+        let answers = [];
+        let selectedOption = null;
+
+        // 開始測驗
+        startBtn.addEventListener('click', startQuiz);
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // 開始測驗函數
+        function startQuiz() {
+            introScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            currentQuestionIndex = 0;
+            answers = [];
+            loadQuestion();
+        }
+
+        // 載入問題函數
+        function loadQuestion() {
+            const questionData = questions[currentQuestionIndex];
+            questionText.textContent = `問題 ${currentQuestionIndex + 1}：${questionData.question}`;
+            
+            // 清空選項容器
+            optionsContainer.innerHTML = '';
+            
+            // 添加選項
+            questionData.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('option');
+                optionElement.textContent = option;
+                optionElement.dataset.value = option.charAt(0);
+                
+                optionElement.addEventListener('click', () => {
+                    // 移除之前選擇的選項的選中狀態
+                    document.querySelectorAll('.option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    
+                    // 設置當前選擇的選項
+                    optionElement.classList.add('selected');
+                    selectedOption = option.charAt(0);
+                    nextBtn.disabled = false;
+                });
+                
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // 禁用下一步按鈕，直到選擇選項
+            nextBtn.disabled = true;
+        }
+
+        // 下一題函數
+        function nextQuestion() {
+            // 保存答案
+            answers.push(selectedOption);
+            
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showProgressScreen();
+            }
+        }
+
+        // 顯示進度畫面
+        function showProgressScreen() {
+            quizScreen.classList.add('hidden');
+            progressScreen.classList.remove('hidden');
+            
+            // 顯示進度條
+            document.querySelector('.progress-container').style.display = 'block';
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 1;
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(showResult, 500);
+                }
+            }, 30);
+        }
+
+        // 顯示結果
+        function showResult() {
+            progressScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            // 計算最常選的選項
+            const counts = {};
+            answers.forEach(answer => {
+                counts[answer] = (counts[answer] || 0) + 1;
+            });
+            
+            let mostCommon = 'A';
+            let maxCount = 0;
+            
+            for (const answer in counts) {
+                if (counts[answer] > maxCount) {
+                    maxCount = counts[answer];
+                    mostCommon = answer;
+                }
+            }
+            
+            // 設置個性特質
+            personalityTraitText.textContent = personalityTraits[mostCommon] + "...";
+            
+            // 隨機選擇解釋
+            const randomExplanation = explanations[Math.floor(Math.random() * explanations.length)];
+            explanationText.textContent = randomExplanation;
+        }
+
+        // 重新測驗
+        function restartQuiz() {
+            resultScreen.classList.add('hidden');
+            introScreen.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
